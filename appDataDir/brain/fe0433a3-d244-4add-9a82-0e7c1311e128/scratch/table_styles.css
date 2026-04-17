@@ -1,0 +1,83 @@
+
+/* ==========================================================================
+   PREMIUM GRID TABLE SYSTEM
+   ========================================================================== */
+.table-container {
+    @apply bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden mt-2;
+}
+
+.table-toolbar {
+    @apply p-6 pb-2 flex items-center justify-between gap-4;
+}
+
+.table-search-box {
+    @apply relative w-full max-w-sm;
+}
+
+.table-search-input {
+    @apply w-full pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-100 rounded-xl text-xs focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 outline-none transition-all text-slate-600 placeholder:text-slate-400 font-medium;
+}
+
+.table-action-btn {
+    @apply flex items-center gap-2 px-3 py-1.5 bg-slate-50/50 border border-slate-100 rounded-lg hover:bg-slate-100 transition-colors text-[11px] font-bold text-slate-600 tracking-tight cursor-pointer;
+}
+
+.table-grid-wrapper {
+    @apply overflow-x-auto px-6 py-2;
+}
+
+.table-grid {
+    @apply w-full border-separate border-spacing-0 border border-slate-200 bg-white;
+}
+
+.table-th {
+    @apply py-3 px-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 bg-slate-50/50;
+}
+
+.table-td {
+    @apply py-2.5 px-4 text-xs border border-slate-200;
+}
+
+.table-td-bold {
+    @apply font-bold text-slate-700;
+}
+
+.table-td-indigo {
+    @apply font-bold text-indigo-600;
+}
+
+.table-td-muted {
+    @apply font-medium text-slate-500;
+}
+
+.table-row-hover {
+    @apply transition-colors hover:bg-slate-50/50;
+}
+
+.btn-table-action {
+    @apply text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors hover:underline;
+}
+
+.table-footer {
+    @apply px-8 py-4 flex items-center justify-between;
+}
+
+.table-info-text {
+    @apply text-[10px] font-black text-slate-400 uppercase tracking-widest italic tracking-tight;
+}
+
+.pagination-dot {
+    @apply w-8 h-8 flex items-center justify-center rounded-full font-bold text-[11px] transition-colors;
+}
+
+.pagination-dot-active {
+    @apply bg-slate-100 text-slate-600;
+}
+
+.pagination-dot-inactive {
+    @apply text-slate-600 hover:bg-slate-50;
+}
+
+.pagination-nav-btn {
+    @apply w-7 h-7 flex items-center justify-center text-slate-300 hover:text-slate-600 transition-colors;
+}
