@@ -53,6 +53,8 @@
         <!-- Footer -->
         <?= $this->include('layouts/footer') ?>
         <script src="<?= base_url('js/main.js') ?>"></script>
+
+        <?= $this->renderSection('js') ?>
 </body>
 
 </html>

@@ -94,7 +94,7 @@ h3,
     overflow: hidden;
     transition: all 0.3s ease-in-out;
     opacity: 0;
-    margin-left: 1.75rem;
+    margin-left: 3rem;
     border-left: 1px solid #e2e8f0;
 }
 
@@ -503,11 +503,40 @@ body.sidebar-mini .user-profile-card img {
 }
 
 .table-search-input {
-    @apply w-full pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-100 rounded-xl text-xs focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 outline-none transition-all text-slate-600 placeholder:text-slate-400 font-medium;
+    @apply w-full pl-10 pr-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[13px] focus:ring-4 focus:ring-indigo-100 focus:border-indigo-300 outline-none transition-all text-slate-800 placeholder:text-slate-400 font-medium;
 }
 
 .table-action-btn {
-    @apply flex items-center gap-2 px-3 py-1.5 bg-slate-50/50 border border-slate-100 rounded-lg hover:bg-slate-100 transition-colors text-[11px] font-bold text-slate-600 tracking-tight cursor-pointer;
+    @apply flex items-center gap-2 px-3 py-1.5 bg-slate-50/50 border border-slate-100 rounded-lg hover:bg-slate-100 transition-colors text-[13px] font-bold text-slate-600 tracking-tight cursor-pointer;
+}
+
+.filter-dropdown {
+    @apply absolute right-0 top-full mt-2 w-72 bg-white rounded-[1.5rem] border border-slate-100 shadow-2xl z-50 p-6 hidden;
+    animation: dropdownFadeIn 0.2s ease-out;
+}
+
+.filter-dropdown.show {
+    @apply block;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.filter-pill {
+    @apply flex-1 py-2 rounded-xl border border-slate-100 bg-slate-50 text-slate-500 text-[10px] font-bold transition-all;
+}
+
+.filter-pill.active {
+    @apply border-2 border-indigo-600 bg-indigo-50 text-indigo-600 shadow-sm;
 }
 
 .table-grid-wrapper {
@@ -519,7 +548,7 @@ body.sidebar-mini .user-profile-card img {
 }
 
 .table-th {
-    @apply py-3 px-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-200/70 bg-slate-50/50;
+    @apply py-3 px-4 text-left text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200/70 bg-slate-50/50;
 }
 
 .table-td {
@@ -551,7 +580,7 @@ body.sidebar-mini .user-profile-card img {
 }
 
 .table-info-text {
-    @apply text-[10px] font-black text-slate-400 uppercase tracking-widest italic tracking-tight;
+    @apply text-[11px] font-bold text-slate-500 uppercase tracking-wider;
 }
 
 .pagination-dot {
@@ -559,7 +588,7 @@ body.sidebar-mini .user-profile-card img {
 }
 
 .pagination-dot-active {
-    @apply bg-slate-100 text-slate-600;
+    @apply bg-indigo-600 text-white shadow-md shadow-indigo-100;
 }
 
 .pagination-dot-inactive {
@@ -567,14 +596,14 @@ body.sidebar-mini .user-profile-card img {
 }
 
 .pagination-nav-btn {
-    @apply w-7 h-7 flex items-center justify-center text-slate-300 hover:text-slate-600 transition-colors;
+    @apply w-7 h-7 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors [&_svg]:stroke-[3];
 }
 
 /* ==========================================================================
    PREMIUM MODAL SYSTEM (Standardized Sizes)
    ========================================================================== */
 .modal-backdrop {
-    @apply fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-[2px] opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4;
+    @apply fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-[2px] opacity-0 pointer-events-none transition-all duration-300 flex items-start justify-center p-4 overflow-y-auto py-10;
 }
 
 .modal-backdrop.active {
@@ -583,7 +612,7 @@ body.sidebar-mini .user-profile-card img {
 
 /* Modal Base and Sizing */
 .modal-container {
-    @apply bg-white w-full rounded-[2.5rem] shadow-2xl overflow-hidden translate-y-8 opacity-0 transition-all duration-500 border border-slate-100;
+    @apply bg-white w-full rounded-[2.5rem] shadow-2xl overflow-hidden translate-y-8 opacity-0 transition-all duration-500 border border-slate-100 my-auto;
 }
 
 .modal-sm {
@@ -640,11 +669,11 @@ body.sidebar-mini .user-profile-card img {
 }
 
 .form-label {
-    @apply block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1;
+    @apply block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1;
 }
 
 .form-input {
-    @apply w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[13px] focus:ring-4 focus:ring-indigo-100 focus:border-indigo-300 outline-none transition-all text-slate-700 placeholder:text-slate-400 font-medium whitespace-nowrap overflow-hidden text-ellipsis;
+    @apply w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[13px] focus:ring-4 focus:ring-indigo-100 focus:border-indigo-300 outline-none transition-all text-slate-800 placeholder:text-slate-400 font-medium whitespace-nowrap overflow-hidden text-ellipsis;
 }
 
 /* Input Sizes */

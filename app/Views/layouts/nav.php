@@ -84,11 +84,10 @@
         </div>
         <div class="submenu-container">
             <a href="<?= base_url('usuarios') ?>" class="submenu-item">Usuarios</a>
-            <a href="<?= base_url('proyectos') ?>" class="submenu-item">Roles</a>
-            <a href="<?= base_url('facturacion') ?>" class="submenu-item">Permisos</a>
-            <a href="<?= base_url('facturacion') ?>" class="submenu-item">Módulos</a>
-            <a href="<?= base_url('facturacion') ?>" class="submenu-item">Acciones</a>
-            <a href="<?= base_url('facturacion') ?>" class="submenu-item">Configuración Acciones</a>
+            <a href="<?= base_url('permisos') ?>" class="submenu-item">Permisos</a>
+            <a href="<?= base_url('modulos') ?>" class="submenu-item">Módulos</a>
+            <a href="<?= base_url('acciones') ?>" class="submenu-item">Acciones</a>
+            <a href="<?= base_url('configuracion-acciones-modulos') ?>" class="submenu-item">Configuración Acciones</a>
         </div>
     </div>
 
