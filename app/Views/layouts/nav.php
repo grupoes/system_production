@@ -66,11 +66,11 @@
             <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 opacity-40"></i>
         </div>
         <div class="submenu-container">
-            <a href="<?= base_url('clientes') ?>" class="submenu-item">Universidad</a>
-            <a href="<?= base_url('proyectos') ?>" class="submenu-item">Carrera</a>
-            <a href="<?= base_url('facturacion') ?>" class="submenu-item">Feriados</a>
-            <a href="<?= base_url('facturacion') ?>" class="submenu-item">Origen de Contacto</a>
-            <a href="<?= base_url('facturacion') ?>" class="submenu-item">Nivel Académico</a>
+            <a href="<?= base_url('universidades') ?>" class="submenu-item">Universidad</a>
+            <a href="<?= base_url('carreras') ?>" class="submenu-item">Carrera</a>
+            <a href="<?= base_url('feriados') ?>" class="submenu-item">Feriados</a>
+            <a href="<?= base_url('origen_contactos') ?>" class="submenu-item">Origen de Contacto</a>
+            <a href="<?= base_url('nivel_academico') ?>" class="submenu-item">Nivel Académico</a>
         </div>
     </div>
 

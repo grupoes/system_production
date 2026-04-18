@@ -15,3 +15,9 @@ $routes->get('modulos', 'Modulos::index');
 
 $routes->get('acciones', 'Acciones::index');
 $routes->get('configuracion-acciones-modulos', 'Acciones::configuracionAccionesModulos');
+
+$routes->get('universidades', 'Universidad::index');
+$routes->get('carreras', 'Carreras::index');
+$routes->get('feriados', 'Feriados::index');
+$routes->get('origen_contactos', 'OrigenContactos::index');
+$routes->get('nivel_academico', 'NivelAcademico::index');
