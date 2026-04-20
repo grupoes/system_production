@@ -72,10 +72,19 @@
             <div class="relative">
                 <button id="user-dropdown-toggle" class="flex items-center gap-3 p-1.5 px-3 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100">
                     <div class="hidden sm:flex flex-col items-end text-right">
-                        <span class="text-xs font-bold text-slate-800 leading-none">Admin User</span>
-                        <span class="text-[10px] font-medium text-slate-400 mt-1 uppercase tracking-tighter">Administrador</span>
+                        <span class="text-xs font-bold text-slate-800 leading-none"><?= session()->get('nombre') ?? 'Usuario' ?></span>
+                        <span class="text-[10px] font-medium text-slate-400 mt-1 uppercase tracking-tighter"><?= session()->get('rol_nombre') ?? 'Sin Rol' ?></span>
                     </div>
-                    <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs ring-2 ring-white">AD</div>
+                    <?php
+                        $fullName = session()->get('nombre') ?? 'Usuario';
+                        $words = explode(' ', $fullName);
+                        $initials = '';
+                        foreach ($words as $w) {
+                            if (!empty($w)) $initials .= strtoupper($w[0]);
+                        }
+                        $initials = !empty($initials) ? substr($initials, 0, 2) : 'U';
+                    ?>
+                    <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs ring-2 ring-white"><?= $initials ?></div>
                     <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
                 </button>
 
