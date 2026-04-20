@@ -2,23 +2,18 @@
 
 namespace App\Controllers;
 
-class Universidad extends BaseController
+use App\Models\OrigenModel;
+
+class OrigenContactos extends BaseController
 {
     public function index(): string
     {
-        return view('universidad/index');
+        return view('origen_contactos/index');
     }
 
-    public function getAll()
+    public function getList()
     {
-        $model = new \App\Models\InstitucionModel();
-        $data = $model->where('estado', true)->orderBy('nombre', 'ASC')->findAll();
-        return $this->response->setJSON(['status' => 'success', 'data' => $data]);
-    }
-
-    public function getUniversidades()
-    {
-        $model = new \App\Models\InstitucionModel();
+        $model = new OrigenModel();
         $search = $this->request->getGet('search');
         $limit = $this->request->getGet('limit') ?? 10;
         $page = $this->request->getGet('page') ?? 1;
@@ -27,8 +22,10 @@ class Universidad extends BaseController
         $builder = $model->where('estado', true);
 
         if (!empty($search)) {
+            $builder->groupStart();
             $builder->like('nombre', $search, 'both', true);
-            $builder->orLike('abreviatura', $search, 'both', true);
+            $builder->orLike('descripcion', $search, 'both', true);
+            $builder->groupEnd();
         }
 
         $total = $builder->countAllResults(false);
@@ -38,40 +35,38 @@ class Universidad extends BaseController
             'status' => 'success',
             'data' => $data,
             'total' => $total,
-            'limit' => $limit,
-            'page' => $page
+            'limit' => (int)$limit,
+            'page' => (int)$page
         ]);
     }
 
-    public function getUniversidad($id)
+    public function get($id)
     {
-        $model = new \App\Models\InstitucionModel();
+        $model = new OrigenModel();
         $data = $model->find($id);
         if ($data) {
             return $this->response->setJSON(['status' => 'success', 'data' => $data]);
         }
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Institución no encontrada']);
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Origen no encontrado']);
     }
 
     public function save()
     {
-        $model = new \App\Models\InstitucionModel();
-        $id = $this->request->getPost('id_universidad');
+        $model = new OrigenModel();
+        $id = $this->request->getPost('id_origen');
         
         $data = [
             'nombre' => strtoupper($this->request->getPost('nombre')),
-            'abreviatura' => strtoupper($this->request->getPost('abreviatura')),
-            'sector' => $this->request->getPost('sector'),
-            'tipo' => $this->request->getPost('tipo'),
+            'descripcion' => $this->request->getPost('descripcion'),
             'estado' => true
         ];
 
         if ($id) {
             $model->update($id, $data);
-            $msg = 'Universidad actualizada correctamente';
+            $msg = 'Origen de contacto actualizado correctamente';
         } else {
             $model->insert($data);
-            $msg = 'Universidad registrada correctamente';
+            $msg = 'Origen de contacto registrado correctamente';
         }
 
         return $this->response->setJSON(['status' => 'success', 'message' => $msg]);
@@ -79,9 +74,9 @@ class Universidad extends BaseController
 
     public function delete($id)
     {
-        $model = new \App\Models\InstitucionModel();
+        $model = new OrigenModel();
         if ($model->update($id, ['estado' => false])) {
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Universidad eliminada correctamente']);
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Origen eliminado correctamente']);
         }
         return $this->response->setJSON(['status' => 'error', 'message' => 'Error al eliminar']);
     }

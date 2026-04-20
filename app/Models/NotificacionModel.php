@@ -23,7 +23,7 @@ class NotificacionModel extends Model
         'fecha_lectura'
     ];
 
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $dateFormat    = 'datetime';

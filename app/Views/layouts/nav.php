@@ -17,10 +17,10 @@
             <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 opacity-40"></i>
         </div>
         <div class="submenu-container">
-            <a href="<?= base_url('usuarios') ?>" class="submenu-item">Registro de Potencial Cliente</a>
-            <a href="<?= base_url('roles') ?>" class="submenu-item">Lista de Potenciales Clientes</a>
-            <a href="<?= base_url('asistencias') ?>" class="submenu-item">Documentos y Evidencias</a>
-            <a href="<?= base_url('asistencias') ?>" class="submenu-item">Anotaciones</a>
+            <a href="<?= base_url('registrar-potencial-cliente') ?>" class="submenu-item">Registro de Potencial Cliente</a>
+            <a href="<?= base_url('lista-potenciales-clientes') ?>" class="submenu-item">Lista de Potenciales Clientes</a>
+            <a href="<?= base_url('documentos-evidencias') ?>" class="submenu-item">Documentos y Evidencias</a>
+            <a href="<?= base_url('anotaciones') ?>" class="submenu-item">Anotaciones</a>
         </div>
     </div>
 
@@ -33,11 +33,11 @@
             <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 opacity-40"></i>
         </div>
         <div class="submenu-container">
-            <a href="<?= base_url('clientes') ?>" class="submenu-item">Lista de Tareas</a>
-            <a href="<?= base_url('proyectos') ?>" class="submenu-item">Turnos Ventas</a>
-            <a href="<?= base_url('facturacion') ?>" class="submenu-item">Control de Carga</a>
-            <a href="<?= base_url('facturacion') ?>" class="submenu-item">Auxiliar Antiguo</a>
-            <a href="<?= base_url('facturacion') ?>" class="submenu-item">Historial de Tareas</a>
+            <a href="<?= base_url('lista-tareas') ?>" class="submenu-item">Lista de Tareas</a>
+            <a href="<?= base_url('turnos-ventas') ?>" class="submenu-item">Turnos Ventas</a>
+            <a href="<?= base_url('control-carga') ?>" class="submenu-item">Control de Carga</a>
+            <a href="<?= base_url('auxiliar-antiguo') ?>" class="submenu-item">Auxiliar Antiguo</a>
+            <a href="<?= base_url('historial-tareas') ?>" class="submenu-item">Historial de Tareas</a>
         </div>
     </div>
 

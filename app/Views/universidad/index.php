@@ -8,196 +8,305 @@
             <h1 class="text-2xl font-bold text-slate-800 tracking-tight text-left">Universidades</h1>
             <p class="text-sm text-slate-500 mt-1 text-left">Administración de instituciones de educación superior.</p>
         </div>
-        <button onclick="openModal('modal_universidad')" class="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-md transition-all active:scale-95 text-sm font-bold">
+        <button onclick="openModalUniversidad()" class="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-md transition-all active:scale-95 text-sm font-bold">
             <i data-lucide="plus" class="w-4 h-4"></i>
             Nueva Universidad
         </button>
     </div>
 
     <!-- Reusable Table Container -->
-    <div class="table-container">
+    <div class="table-container bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
         <!-- Top Toolbar -->
-        <div class="table-toolbar">
-            <div class="table-search-box">
+        <div class="table-toolbar p-6 flex items-center justify-between border-b border-slate-50">
+            <div class="table-search-box relative w-full max-w-md">
                 <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"></i>
-                <input type="text" placeholder="Buscar universidades..." class="table-search-input">
+                <input type="text" id="search-universidad" placeholder="Buscar universidades..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all" oninput="loadUniversidades()">
             </div>
-            <div class="flex items-center gap-2">
-                <!-- Records per Page Selector -->
-                <div class="relative text-left">
-                    <select class="table-action-btn appearance-none pr-8 bg-slate-50/50 border border-slate-100 rounded-lg outline-none cursor-pointer text-xs font-bold text-slate-600">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                    <i data-lucide="chevrons-up-down" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-slate-400 pointer-events-none"></i>
-                </div>
-
-                <!-- Filter Container -->
-                <div class="relative text-left">
-                    <button onclick="toggleFilter(event)" class="table-action-btn flex items-center gap-2">
-                        <span class="text-xs font-bold text-slate-600">Filtrar</span>
-                        <i data-lucide="filter" class="w-3 h-3 text-slate-400"></i>
-                    </button>
-
-                    <!-- Filter Dropdown Menu -->
-                    <div id="filter-dropdown" class="filter-dropdown">
-                        <div class="mb-4">
-                            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Opciones de Filtro</h3>
-                            <p class="text-[10px] text-slate-400 mt-1">Refina la lista de universidades</p>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div class="form-group mb-0">
-                                <label class="form-label text-[10px]">Estado</label>
-                                <div class="flex gap-2">
-                                    <button type="button" onclick="selectStatus(this)" class="filter-pill active">Activos</button>
-                                    <button type="button" onclick="selectStatus(this)" class="filter-pill">Inactivos</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between gap-3">
-                            <button onclick="toggleFilter(event)" class="text-[10px] font-bold text-slate-400 hover:text-slate-600 transition-colors">Limpiar</button>
-                            <button onclick="toggleFilter(event)" class="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">Aplicar Filtros</button>
-                        </div>
-                    </div>
-                </div>
+            <div class="flex items-center gap-3">
+                <select id="limit-universidad" class="bg-slate-50 border-none rounded-xl text-xs font-bold px-4 py-2.5 focus:ring-2 focus:ring-indigo-500/20 transition-all" onchange="loadUniversidades()">
+                    <option value="10">10 por página</option>
+                    <option value="25">25 por página</option>
+                    <option value="50">50 por página</option>
+                </select>
             </div>
         </div>
 
-        <!-- Main Grid Table -->
-        <div class="table-grid-wrapper">
-            <table class="table-grid text-left">
+        <!-- Table Content -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr>
-                        <th class="table-th w-10 text-center">
-                            <input type="checkbox" class="w-3.5 h-3.5 rounded-none border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                        </th>
-                        <th class="table-th w-16">#</th>
-                        <th class="table-th">Nombre de Universidad <i data-lucide="chevrons-up-down" class="inline w-3 h-3 ml-1 opacity-50"></i></th>
-                        <th class="table-th">Sigla</th>
-                        <th class="table-th text-right px-6">Acciones</th>
+                    <tr class="border-b border-slate-50 bg-slate-50/30">
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">ID</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Universidad / Institución</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Abreviatura</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sector / Tipo</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <?php 
-                    $universidades_mock = [
-                        ['id' => 1, 'nombre' => 'Universidad Nacional Mayor de San Marcos', 'sigla' => 'UNMSM'],
-                        ['id' => 2, 'nombre' => 'Pontificia Universidad Católica del Perú', 'sigla' => 'PUCP'],
-                        ['id' => 3, 'nombre' => 'Universidad Nacional de Ingeniería', 'sigla' => 'UNI'],
-                        ['id' => 4, 'nombre' => 'Universidad de Lima', 'sigla' => 'ULIMA'],
-                        ['id' => 5, 'nombre' => 'Universidad Peruana de Ciencias Aplicadas', 'sigla' => 'UPC'],
-                    ];
-                    foreach ($universidades_mock as $u): ?>
-                    <tr class="group">
-                        <td class="table-td text-center border-slate-50">
-                            <input type="checkbox" class="w-3.5 h-3.5 rounded-none border-slate-200 text-indigo-600 focus:ring-indigo-500">
-                        </td>
-                        <td class="table-td border-slate-50">
-                            <span class="text-xs font-bold text-slate-400">#<?= str_pad($u['id'], 2, '0', STR_PAD_LEFT) ?></span>
-                        </td>
-                        <td class="table-td border-slate-50">
-                            <span class="text-sm font-bold text-slate-800 tracking-tight"><?= $u['nombre'] ?></span>
-                        </td>
-                        <td class="table-td border-slate-50 text-left">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest border border-slate-200/50">
-                                <?= $u['sigla'] ?>
-                            </span>
-                        </td>
-                        <td class="table-td text-right px-6 border-slate-50">
-                            <div class="flex items-center justify-end gap-2">
-                                <button class="p-2 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-all" title="Editar">
-                                    <i data-lucide="edit-3" class="w-4 h-4"></i>
-                                </button>
-                                <button class="p-2 hover:bg-rose-50 rounded-lg text-rose-600 transition-all" title="Eliminar">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
+                <tbody id="tbody-universidad">
+                    <!-- Cargando... -->
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center gap-2 text-slate-400">
+                                <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
+                                <span class="text-xs font-bold uppercase tracking-widest">Cargando datos...</span>
                             </div>
                         </td>
                     </tr>
-                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
 
-        <!-- Footer Pagination -->
-        <div class="table-footer border-t border-slate-50">
-            <p class="table-info-text text-left">Mostrando del 1 al 5 de 12 universidades registradas</p>
-            <div class="flex items-center gap-1.5">
-                <button class="pagination-nav-btn">
-                    <i data-lucide="chevrons-left" class="w-3.5 h-3.5"></i>
-                </button>
-                <div class="pagination-dot pagination-dot-active">1</div>
-                <button class="pagination-dot pagination-dot-inactive">2</button>
-                <button class="pagination-nav-btn rotate-180">
-                    <i data-lucide="chevrons-left" class="w-3.5 h-3.5"></i>
-                </button>
+        <!-- Pagination Footer -->
+        <div class="p-6 border-t border-slate-50 flex items-center justify-between bg-slate-50/20">
+            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest" id="pagination-info">Mostrando 0 de 0 registros</p>
+            <div class="flex items-center gap-2" id="pagination-btns">
+                <!-- Botones de paginación -->
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal: Nueva/Editar Universidad -->
+<!-- Modal: Universidad -->
 <div id="modal_universidad" class="modal-backdrop">
     <div class="modal-container modal-md">
-        <div class="modal-header border-b border-slate-50">
+        <div class="modal-header">
             <h2 class="modal-title">Configurar Universidad</h2>
             <button onclick="closeModal('modal_universidad')" class="modal-close">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </div>
-        <form action="#" method="POST">
-            <div class="modal-body space-y-4 py-6 text-left">
-                <div class="form-group">
-                    <label class="form-label">Nombre de la Universidad</label>
-                    <input type="text" class="form-input" placeholder="Ej: Universidad Nacional de San Agustín">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Sigla</label>
-                    <input type="text" class="form-input" placeholder="Ej: UNSA">
+        <form id="form-universidad" onsubmit="saveUniversidad(event)">
+            <input type="hidden" name="id_universidad" id="id_universidad">
+            <div class="modal-body space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Nombre Completo</label>
+                        <input type="text" name="nombre" id="nombre_uni" class="form-input" placeholder="Ej: Universidad Nacional Mayor de San Marcos" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Abreviatura / Siglas</label>
+                        <input type="text" name="abreviatura" id="abreviatura_uni" class="form-input" placeholder="Ej: UNMSM" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sector</label>
+                        <select name="sector" id="sector_uni" class="form-input" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Pública">Pública</option>
+                            <option value="Privada">Privada</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Institución</label>
+                        <select name="tipo" id="tipo_uni" class="form-input" required>
+                            <option value="">Seleccione...</option>
+                            <option value="UNIVERSIDAD">UNIVERSIDAD</option>
+                            <option value="INSTITUTO">INSTITUTO</option>
+                            <option value="ESCUELA">ESCUELA</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer border-t border-slate-50">
+            <div class="modal-footer">
                 <button type="button" onclick="closeModal('modal_universidad')" class="btn-secondary">Cancelar</button>
-                <button type="submit" class="btn-primary px-8">Guardar Universidad</button>
+                <button type="submit" id="btn-save-uni" class="btn-primary">Guardar Universidad</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
+    let currentPage = 1;
+
     function openModal(id) {
-        const modal = document.getElementById(id);
-        modal.classList.add('active');
+        document.getElementById(id).classList.add('active');
         document.body.style.overflow = 'hidden';
     }
 
     function closeModal(id) {
-        const modal = document.getElementById(id);
-        modal.classList.remove('active');
+        document.getElementById(id).classList.remove('active');
         document.body.style.overflow = 'auto';
     }
 
-    function toggleFilter(event) {
-        event.stopPropagation();
-        const dropdown = document.getElementById('filter-dropdown');
-        dropdown.classList.toggle('active');
+    function loadUniversidades(page = 1) {
+        currentPage = page;
+        const search = document.getElementById('search-universidad').value;
+        const limit = document.getElementById('limit-universidad').value;
+        const tbody = document.getElementById('tbody-universidad');
+
+        fetch(`${window.location.origin}/universidades/list?page=${page}&limit=${limit}&search=${search}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    renderTable(res.data);
+                    renderPagination(res.total, res.limit, res.page);
+                }
+            })
+            .catch(err => console.error(err));
     }
 
-    function selectStatus(btn) {
-        const parent = btn.parentElement;
-        parent.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    // Cerrar dropdown al hacer clic fuera
-    document.addEventListener('click', (e) => {
-        const dropdown = document.getElementById('filter-dropdown');
-        if (dropdown && !dropdown.contains(e.target)) {
-            dropdown.classList.remove('active');
+    function renderTable(data) {
+        const tbody = document.getElementById('tbody-universidad');
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">No se encontraron resultados</td></tr>`;
+            return;
         }
+
+        let html = '';
+        data.forEach(item => {
+            const sectorColor = (item.sector === 'Pública' || item.sector === 'ESTATAL') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600';
+            html += `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-all group">
+                    <td class="px-6 py-4">
+                        <span class="text-[10px] font-black text-slate-400">#${item.id}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-black text-slate-800 tracking-tight">${item.nombre}</span>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${item.tipo}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest">${item.abreviatura}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 ${sectorColor} rounded-lg text-[9px] font-black uppercase tracking-widest">${item.sector}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="editUniversidad(${item.id})" class="p-2 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 rounded-xl transition-all">
+                                <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteUniversidad(${item.id}, '${item.nombre}')" class="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-xl transition-all">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function renderPagination(total, limit, current) {
+        const totalPages = Math.ceil(total / limit);
+        const info = document.getElementById('pagination-info');
+        const btns = document.getElementById('pagination-btns');
+        
+        info.innerText = `Mostrando ${(current - 1) * limit + 1} a ${Math.min(current * limit, total)} de ${total} registros`;
+        
+        let html = '';
+        // Botón anterior
+        html += `<button onclick="loadUniversidades(${current - 1})" ${current == 1 ? 'disabled' : ''} class="p-2 rounded-lg border border-slate-100 hover:bg-white text-slate-400 disabled:opacity-30 transition-all">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>`;
+
+        // Páginas (simplificado)
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= current - 1 && i <= current + 1)) {
+                html += `<button onclick="loadUniversidades(${i})" class="w-9 h-9 rounded-lg text-xs font-black uppercase transition-all ${i == current ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'hover:bg-white text-slate-500 border border-transparent hover:border-slate-100'}">${i}</button>`;
+            } else if (i === current - 2 || i === current + 2) {
+                html += `<span class="text-slate-300">...</span>`;
+            }
+        }
+
+        // Botón siguiente
+        html += `<button onclick="loadUniversidades(${parseInt(current) + 1})" ${current == totalPages ? 'disabled' : ''} class="p-2 rounded-lg border border-slate-100 hover:bg-white text-slate-400 disabled:opacity-30 transition-all">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>`;
+
+        btns.innerHTML = html;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function openModalUniversidad() {
+        const form = document.getElementById('form-universidad');
+        form.reset();
+        document.getElementById('id_universidad').value = '';
+        document.querySelector('.modal-title').innerText = 'Registrar Universidad';
+        openModal('modal_universidad');
+    }
+
+    function editUniversidad(id) {
+        fetch(`${window.location.origin}/universidades/get/${id}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    const uni = res.data;
+                    document.getElementById('id_universidad').value = uni.id;
+                    document.getElementById('nombre_uni').value = uni.nombre;
+                    document.getElementById('abreviatura_uni').value = uni.abreviatura;
+                    document.getElementById('sector_uni').value = uni.sector;
+                    document.getElementById('tipo_uni').value = uni.tipo;
+                    document.querySelector('.modal-title').innerText = 'Editar Universidad';
+                    openModal('modal_universidad');
+                }
+            });
+    }
+
+    function saveUniversidad(e) {
+        e.preventDefault();
+        const form = document.getElementById('form-universidad');
+        const formData = new FormData(form);
+        const btn = document.getElementById('btn-save-uni');
+        const originalText = btn.innerText;
+
+        btn.disabled = true;
+        btn.innerText = 'Guardando...';
+
+        fetch(`${window.location.origin}/universidades/save`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success') {
+                showToast(res.message, 'success');
+                closeModal('modal_universidad');
+                loadUniversidades(currentPage);
+            } else {
+                showToast(res.message, 'error');
+            }
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerText = originalText;
+        });
+    }
+
+    function deleteUniversidad(id, nombre) {
+        showConfirm('¿Eliminar Universidad?', `¿Estás seguro de eliminar <b>${nombre}</b>?`, 'Sí, eliminar', () => {
+            fetch(`${window.location.origin}/universidades/delete/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        showToast(res.message, 'success');
+                        loadUniversidades(currentPage);
+                    } else {
+                        showToast(res.message, 'error');
+                    }
+                });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadUniversidades();
     });
 </script>
+
+<style>
+    .form-input {
+        @apply w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all;
+    }
+    .form-label {
+        @apply text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block;
+    }
+    .btn-primary {
+        @apply px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95;
+    }
+    .btn-secondary {
+        @apply px-6 py-2.5 bg-white text-slate-500 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all;
+    }
+</style>
 <?= $this->endSection() ?>

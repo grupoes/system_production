@@ -15,7 +15,8 @@ class ProspectosModel extends Model
 
     protected $allowedFields = ['id', 'fecha_contacto', 'origen_id', 'usuario_venta_id', 'nivel_academico_id', 'carrera_id', 'estado', 'fecha_entrega', 'contenido', 'link_drive', 'created_at', 'updated_at', 'prioridad', 'estado_cliente', 'responsable_id', 'titulo_prospecto'];
 
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
+    protected $dateFormat    = 'datetime';
 }

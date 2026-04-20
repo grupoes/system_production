@@ -36,7 +36,7 @@ class FeriadoModel extends Model
      */
     public function obtenerActivos()
     {
-        return $this->where('estado', 1)
+        return $this->where('estado', true)
             ->orderBy('fecha', 'ASC')
             ->findAll();
     }
@@ -47,7 +47,7 @@ class FeriadoModel extends Model
     public function obtenerPorAnio($anio)
     {
         return $this->where('YEAR(fecha)', $anio)
-            ->where('estado', 1)
+            ->where('estado', true)
             ->orderBy('fecha', 'ASC')
             ->findAll();
     }
@@ -58,8 +58,8 @@ class FeriadoModel extends Model
     public function esFeriado($fecha)
     {
         $feriado = $this->where('fecha', $fecha)
-            ->where('estado', 1)
-            ->where('es_laborable', 0)
+            ->where('estado', true)
+            ->where('es_laborable', false)
             ->first();
 
         return $feriado !== null;
@@ -72,7 +72,7 @@ class FeriadoModel extends Model
     {
         return $this->where('fecha >=', $fechaInicio)
             ->where('fecha <=', $fechaFin)
-            ->where('estado', 1)
+            ->where('estado', true)
             ->orderBy('fecha', 'ASC')
             ->findAll();
     }
