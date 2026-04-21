@@ -16,12 +16,15 @@ class ControlCarga extends BaseController
         $dayOfWeek = date('N'); 
         
         // En la tabla dias: 1 = LUNES, ..., 6 = SÁBADO
-        // Si es domingo (7), no hay asignación por defecto usualmente en este sistema
         $defaultUserId = null;
+        
         if ($dayOfWeek <= 6) {
-            $asignacion = $db->table('asignacion_dias')
-                ->where('dia_id', $dayOfWeek)
-                ->get()->getRowArray();
+            $builder = $db->table('asignacion_dias ad');
+            $builder->select("usuario_id");
+            $builder->where('ad.dia_id', $dayOfWeek);
+            $builder->orderBy('ad.id', 'ASC');
+            
+            $asignacion = $builder->get()->getRowArray();
             
             if ($asignacion) {
                 $defaultUserId = $asignacion['usuario_id'];
@@ -41,16 +44,31 @@ class ControlCarga extends BaseController
             a.id, 
             a.prioridad, 
             a.estado_progreso,
-            p.titulo_prospecto,
+            p.titulo_prospecto as titulo,
+            p.link_drive,
+            p.contenido as observaciones,
             t.nombre as tarea,
-            STRING_AGG(pers.nombres || ' ' || pers.apellidos, ', ') as prospecto_cliente
+            t.horas_estimadas as minutos,
+            i.nombre as universidad,
+            c.nombre as carrera,
+            na.nombre as nivel_academico,
+            o.nombre as contacto_origen,
+            STRING_AGG(DISTINCT pers.nombres || ' ' || pers.apellidos || ' (' || pers.celular || ')', ', ') as prospecto_cliente,
+            (pv.nombres || ' ' || pv.apellidos) as vendedor
         ");
         $builder->join('prospectos p', 'p.id = a.prospecto_id');
         $builder->join('tarea t', 't.id = a.tarea_id');
+        $builder->join('carreras c', 'c.id = p.carrera_id', 'left');
+        $builder->join('institucion i', 'i.id = c.institucion_id', 'left');
+        $builder->join('nivel_academico na', 'na.id = p.nivel_academico_id', 'left');
+        $builder->join('origen o', 'o.id = p.origen_id', 'left');
         $builder->join('prospecto_persona pp', 'pp.prospecto_id = p.id', 'left');
         $builder->join('personas pers', 'pers.id = pp.persona_id', 'left');
+        $builder->join('usuarios uv', 'uv.id = p.usuario_venta_id', 'left');
+        $builder->join('personas pv', 'pv.id = uv.persona_id', 'left');
+        
         $builder->where('a.estado_progreso', 'PENDIENTE');
-        $builder->groupBy('a.id, p.titulo_prospecto, t.nombre');
+        $builder->groupBy('a.id, p.titulo_prospecto, p.link_drive, p.contenido, t.nombre, t.horas_estimadas, i.nombre, c.nombre, na.nombre, o.nombre, pv.nombres, pv.apellidos');
         $builder->orderBy('a.id', 'DESC');
         
         $data = $builder->get()->getResultArray();
@@ -64,10 +82,20 @@ class ControlCarga extends BaseController
     public function getUsers()
     {
         $db = \Config\Database::connect();
+        $dayOfWeek = date('N');
+
         $builder = $db->table('usuarios u');
-        $builder->select("u.id, (p.nombres || ' ' || p.apellidos) as nombre");
+        $builder->select("
+            u.id, 
+            (p.nombres || ' ' || p.apellidos) as nombre,
+            CASE WHEN EXISTS (
+                SELECT 1 FROM asignacion_dias ad 
+                WHERE ad.usuario_id = u.id AND ad.dia_id = $dayOfWeek
+            ) THEN 1 ELSE 0 END as es_responsable
+        ");
         $builder->join('personas p', 'p.id = u.persona_id');
         $builder->where('u.estado', true);
+        $builder->orderBy('es_responsable', 'DESC');
         $builder->orderBy('p.nombres', 'ASC');
         
         $data = $builder->get()->getResultArray();

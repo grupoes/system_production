@@ -98,3 +98,4 @@ $routes->get('lista-potenciales-clientes/list', 'Prospectos::getList');
 $routes->get('prospectos/data-form', 'Prospectos::getDataForm');
 $routes->get('prospectos/carreras/(:num)', 'Prospectos::getCarreras/$1');
 $routes->post('prospectos/save', 'Prospectos::save');
+$routes->post('prospectos/save-carrera', 'Prospectos::saveCarrera');

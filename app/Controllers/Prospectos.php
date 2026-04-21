@@ -45,18 +45,18 @@ class Prospectos extends BaseController
         $builder->join('personas c_pers', 'c_pers.id = pp.persona_id', 'left');
         $builder->join('actividades a', 'a.prospecto_id = p.id', 'left');
         $builder->join('tarea t', 't.id = a.tarea_id', 'left');
-        
+
         if (!empty($search)) {
             $s = $db->escapeLikeString($search);
             $builder->groupStart()
-                    ->where("i.nombre ILIKE '%$s%'")
-                    ->orWhere("c.nombre ILIKE '%$s%'")
-                    ->orWhere("t.nombre ILIKE '%$s%'")
-                    ->orWhere("(v_pers.nombres || ' ' || v_pers.apellidos) ILIKE '%$s%'")
-                    ->orWhere("(c_pers.nombres || ' ' || c_pers.apellidos) ILIKE '%$s%'")
-                    ->orWhere("c_pers.celular ILIKE '%$s%'")
-                    ->orWhere("CAST(p.created_at AS TEXT) ILIKE '%$s%'")
-                    ->groupEnd();
+                ->where("i.nombre ILIKE '%$s%'")
+                ->orWhere("c.nombre ILIKE '%$s%'")
+                ->orWhere("t.nombre ILIKE '%$s%'")
+                ->orWhere("(v_pers.nombres || ' ' || v_pers.apellidos) ILIKE '%$s%'")
+                ->orWhere("(c_pers.nombres || ' ' || c_pers.apellidos) ILIKE '%$s%'")
+                ->orWhere("c_pers.celular ILIKE '%$s%'")
+                ->orWhere("CAST(p.created_at AS TEXT) ILIKE '%$s%'")
+                ->groupEnd();
         }
 
         $builder->groupBy('p.id, i.nombre, c.nombre, t.nombre, v_pers.nombres, v_pers.apellidos');
@@ -84,7 +84,7 @@ class Prospectos extends BaseController
 
         if ($id) {
             $db = \Config\Database::connect();
-            
+
             // Datos del prospecto + universidad_id (desde carrera)
             $prospecto = $db->table('prospectos p')
                 ->select('p.*, c.institucion_id as universidad_id')
@@ -146,6 +146,7 @@ class Prospectos extends BaseController
         $ppModel = new ProspectoPersonaModel();
         $actividadModel = new \App\Models\ActividadesModel();
         $notificacionModel = new NotificacionModel();
+        $historialModel = new \App\Models\HistorialEstadoProspectoModel();
 
         $id = $this->request->getPost('id');
         $tareaId = $this->request->getPost('tarea_id');
@@ -180,6 +181,27 @@ class Prospectos extends BaseController
                 $prospectoModel->update($id, $dataProspecto);
                 $prospectoId = $id;
 
+                // Si se forzó el estado a CLIENTE
+                $nuevoEstado = $this->request->getPost('nuevo_estado_cliente');
+                if ($nuevoEstado === 'cliente') {
+                    // Cerrar estado anterior (PROSPECTO -> CLIENTE)
+                    $historialModel->where('prospecto_id', $id)
+                        ->where('fecha_fin', null)
+                        ->set(['fecha_fin' => date('Y-m-d H:i:s')])
+                        ->update();
+
+                    $prospectoModel->update($id, ['estado_cliente' => 'cliente']);
+                    
+                    // Historial de Estado (CLIENTE)
+                    $historialModel->insert([
+                        'prospecto_id' => $id,
+                        'estado'       => 'CLIENTE',
+                        'fecha_inicio' => date('Y-m-d H:i:s'),
+                        'usuario_id'   => session()->get('id'),
+                        'comentario'   => 'EL USUARIO ' . session()->get('nombre') . ' CONVIRTIÓ EL PROSPECTO EN CLIENTE'
+                    ]);
+                }
+
                 $actividadModel->where('prospecto_id', $id)->set([
                     'tarea_id'                => $tareaId,
                     'prioridad'               => $dataProspecto['prioridad'],
@@ -192,9 +214,18 @@ class Prospectos extends BaseController
                 $dataProspecto['estado']           = true;
                 $dataProspecto['usuario_venta_id'] = session()->get('id');
                 $dataProspecto['estado_cliente']   = 'pendiente';
-                
+
                 $prospectoId = $prospectoModel->insert($dataProspecto);
                 if (!$prospectoId) throw new \Exception('Error prospecto: ' . json_encode($prospectoModel->errors()));
+
+                // Historial de Estado
+                $historialModel->insert([
+                    'prospecto_id' => $prospectoId,
+                    'estado'       => 'PROSPECTO',
+                    'fecha_inicio' => date('Y-m-d H:i:s'),
+                    'usuario_id'   => session()->get('id'),
+                    'comentario'   => 'EL USUARIO ' . session()->get('nombre') . ' REGISTRÓ AL POTENCIAL CLIENTE'
+                ]);
 
                 $actividadModel->insert([
                     'prospecto_id'            => $prospectoId,
@@ -239,7 +270,7 @@ class Prospectos extends BaseController
                             'celular'   => $celular,
                             'estado'    => true
                         ]);
-                        
+
                         if ($personaId) {
                             $ppModel->insert([
                                 'persona_id'   => $personaId,
@@ -252,7 +283,6 @@ class Prospectos extends BaseController
 
             $db->transComplete();
             return $this->response->setJSON(['status' => 'success', 'message' => 'Registro completado con éxito.']);
-
         } catch (\Throwable $th) {
             $db->transRollback();
             return $this->response->setJSON([
@@ -260,5 +290,33 @@ class Prospectos extends BaseController
                 'message' => 'Error DB: ' . $th->getMessage()
             ]);
         }
+    }
+
+    public function saveCarrera()
+    {
+        $nombre = $this->request->getPost('nombre');
+        $universidadId = $this->request->getPost('universidad_id');
+
+        if (empty($nombre) || empty($universidadId)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Faltan datos obligatorios.']);
+        }
+
+        $model = new \App\Models\CarreraModel();
+        $id = $model->insert([
+            'nombre'         => strtoupper($nombre),
+            'institucion_id' => $universidadId,
+            'estado'         => true
+        ]);
+
+        if ($id) {
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'Carrera registrada correctamente.',
+                'id'      => $id,
+                'nombre'  => strtoupper($nombre)
+            ]);
+        }
+
+        return $this->response->setJSON(['status' => 'error', 'message' => 'No se pudo registrar la carrera.']);
     }
 }

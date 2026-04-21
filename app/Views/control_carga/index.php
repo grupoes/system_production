@@ -101,47 +101,102 @@
     <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
         <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeAsignarModal()"></div>
         
-        <div class="relative bg-white rounded-3xl shadow-2xl transform transition-all sm:my-8 sm:max-w-md sm:w-full overflow-hidden border border-slate-100">
-            <div class="p-6">
+        <div class="relative bg-white rounded-3xl shadow-2xl transform transition-all sm:my-8 sm:max-w-2xl sm:w-full overflow-hidden border border-slate-100">
+            <div class="p-8">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-bold text-slate-800">Asignar Actividad</h3>
-                    <button onclick="closeAsignarModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <div>
+                        <h3 class="text-2xl font-bold text-slate-800">Asignar Actividad</h3>
+                        <p class="text-xs text-slate-500 mt-1">Configure los detalles de la asignación para el auxiliar.</p>
+                    </div>
+                    <button onclick="closeAsignarModal()" class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-xl transition-all">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
 
-                <form id="form-asignar" class="space-y-5 text-left">
+                <form id="form-asignar" class="space-y-6 text-left">
                     <input type="hidden" id="asig-actividad-id">
                     
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Actividad</label>
-                        <input type="text" id="asig-actividad-nombre" readonly class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-semibold text-slate-700 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Usuario Asignado</label>
-                        <select id="asig-usuario-id" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all cursor-pointer">
-                            <option value="">Seleccionar auxiliar...</option>
-                        </select>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Inicio</label>
-                            <input type="time" id="asig-hora-inicio" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                    <!-- Prospect Info Section (Informational) -->
+                    <div class="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Título del Proyecto</label>
+                                <div id="asig-titulo" class="px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-700 shadow-sm"></div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Universidad</label>
+                                <div id="asig-universidad" class="px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-semibold text-slate-600 shadow-sm"></div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Carrera</label>
+                                <div id="asig-carrera" class="px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-semibold text-slate-600 shadow-sm"></div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Nivel Académico</label>
+                                <div id="asig-nivel" class="px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-semibold text-slate-600 shadow-sm"></div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Origen</label>
+                                <div id="asig-origen" class="px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-semibold text-slate-600 shadow-sm"></div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Prioridad</label>
+                                <div id="asig-prioridad" class="px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-bold shadow-sm"></div>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Contactos</label>
+                                <div id="asig-contactos" class="px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-semibold text-slate-600 shadow-sm"></div>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Link Drive</label>
+                                <a id="asig-link-drive" href="#" target="_blank" class="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 border border-indigo-100 rounded-xl text-sm font-bold text-indigo-600 hover:bg-indigo-100 transition-all">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                    Abrir Documento
+                                </a>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Observaciones</label>
+                                <div id="asig-observaciones" class="px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm text-slate-600 min-h-[60px] italic shadow-sm"></div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Fin</label>
-                            <input type="time" id="asig-hora-fin" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                    </div>
+
+                    <!-- Assignment Fields -->
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Actividad a Realizar</label>
+                                <input type="text" id="asig-actividad-nombre" readonly class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Usuario Asignado</label>
+                                <select id="asig-usuario-id" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all cursor-pointer">
+                                    <option value="">Seleccionar auxiliar...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hora Inicio</label>
+                                <div class="relative">
+                                    <input type="time" id="asig-hora-inicio" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                                    <i data-lucide="clock" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hora Fin</label>
+                                <div class="relative">
+                                    <input type="time" id="asig-hora-fin" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                                    <i data-lucide="clock-alert" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="pt-4 flex gap-3">
-                        <button type="button" onclick="closeAsignarModal()" class="flex-1 px-6 py-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all font-bold text-sm">
+                        <button type="button" onclick="closeAsignarModal()" class="flex-1 px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all font-bold text-sm">
                             Cancelar
                         </button>
-                        <button type="submit" class="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95 font-bold text-sm">
-                            Confirmar
+                        <button type="submit" class="flex-1 px-6 py-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all active:scale-95 font-bold text-sm">
+                            Confirmar Asignación
                         </button>
                     </div>
                 </form>
@@ -154,6 +209,7 @@
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 <script>
     const DEFAULT_USER_ID = <?= json_encode($defaultUserId) ?>;
+    const BASE_URL = '<?= base_url() ?>';
 </script>
 <script src="<?= base_url('js/pages/control_carga/index.js') ?>"></script>
 

@@ -94,8 +94,12 @@
                             <option value="">Seleccione universidad...</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group relative">
                         <label class="form-label">Carrera / Programa</label>
+                        <button type="button" onclick="openModalCarrera()" class="absolute top-0 right-0 text-indigo-600 hover:text-indigo-800 transition-all flex items-center gap-1 group py-1">
+                            <span class="text-[9px] font-bold uppercase tracking-tight opacity-0 group-hover:opacity-100 transition-opacity">Nueva</span>
+                            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                        </button>
                         <select name="carrera_id" id="carrera_id">
                             <option value="">Seleccione carrera...</option>
                         </select>
@@ -150,8 +154,15 @@
 
                 <!-- Submit Section -->
                 <div class="flex items-center justify-end gap-4 pt-6 border-t border-slate-50">
-                    <button type="reset" class="btn-secondary" onclick="resetForm()">Limpiar Formulario</button>
-                    <button type="submit" id="btn-save-prospecto" class="btn-primary flex items-center gap-2">
+
+                    <?php if (isset($prospecto) && $prospecto['estado_cliente'] !== 'cliente'): ?>
+                        <button type="button" onclick="convertToClient(event)" class="btn-success flex items-center gap-2">
+                            <i data-lucide="user-check" class="w-4 h-4"></i>
+                            Convertir a Cliente
+                        </button>
+                    <?php endif; ?>
+
+                    <button type="submit" id="btn-save-prospecto" class="btn-primary flex items-center gap-2 cursor-pointer">
                         <i data-lucide="save" class="w-4 h-4"></i>
                         <?= isset($prospecto) ? 'Actualizar Prospecto' : 'Registrar Potencial Cliente' ?>
                     </button>
@@ -159,6 +170,45 @@
             </div>
         </div>
     </form>
+</div>
+
+<!-- Modal: Nueva Carrera -->
+<div id="modal-carrera" class="hidden fixed inset-0 z-[100] overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModalCarrera()"></div>
+
+        <div class="relative bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 transform transition-all">
+            <div class="p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-800 tracking-tight uppercase">Nueva Carrera</h3>
+                    </div>
+                    <button onclick="closeModalCarrera()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="form-group text-left">
+                        <label class="form-label">Universidad Seleccionada</label>
+                        <input type="text" id="carrera-uni-nombre" readonly class="form-input bg-slate-50 text-slate-500 italic">
+                    </div>
+                    <div class="form-group text-left">
+                        <label class="form-label">Nombre de la Carrera</label>
+                        <input type="text" id="carrera-nombre" class="form-input" placeholder="Ej: Ingeniería de Sistemas">
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-8">
+                    <button type="button" onclick="closeModalCarrera()" class="flex-1 btn-secondary">Cancelar</button>
+                    <button type="button" onclick="saveNewCarrera()" class="flex-1 btn-primary">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Quill Editor Scripts -->
@@ -170,10 +220,10 @@
     let tsUni, tsCarrera, tsTarea, tsNivel, tsOrigen, tsPrioridad;
 
     const initialData = <?= json_encode([
-        'prospecto' => $prospecto ?? null,
-        'actividad' => $actividad ?? null,
-        'contactos' => $contactos ?? null
-    ]) ?>;
+                            'prospecto' => $prospecto ?? null,
+                            'actividad' => $actividad ?? null,
+                            'contactos' => $contactos ?? null
+                        ]) ?>;
 
     document.addEventListener('DOMContentLoaded', async () => {
         // Init Quill
@@ -250,7 +300,7 @@
         const container = document.getElementById('contacts-container');
         const entry = document.createElement('div');
         entry.className = 'contact-entry p-5 bg-slate-50/50 rounded-3xl border border-slate-100 relative group animate-fade-in mb-4 last:mb-0';
-        
+
         // No permitir borrar si es el único contacto
         const showDelete = container.children.length > 0;
 
@@ -326,7 +376,7 @@
         document.getElementsByName('link_drive')[0].value = p.link_drive || '';
         document.getElementsByName('fecha_entrega')[0].value = p.fecha_entrega || '';
         document.getElementById('prioridad').value = p.prioridad || 'NORMAL';
-        
+
         // Quill
         if (p.contenido) {
             quill.root.innerHTML = p.contenido;
@@ -381,7 +431,43 @@
         }
     }
 
-    function saveProspecto(e) {
+    function convertToClient(e) {
+        e.preventDefault();
+
+        // Validaciones para Cliente
+        const titulo = document.getElementsByName('titulo_trabajo')[0].value.trim();
+        const uni = document.getElementById('universidad_id').value;
+        const carrera = document.getElementById('carrera_id').value;
+        const nivel = document.getElementById('nivel_id').value;
+        const link = document.getElementsByName('link_drive')[0].value.trim();
+        const fecha = document.getElementsByName('fecha_entrega')[0].value;
+        const nombres = document.getElementsByName('nombres[]');
+        const apellidos = document.getElementsByName('apellidos[]');
+        const celulares = document.getElementsByName('celulares[]');
+
+        if (!titulo || !uni || !carrera || !nivel || !link || !fecha) {
+            showToast('Para convertir a cliente, todos los campos académicos, el link de drive y la fecha de entrega son obligatorios.', 'error');
+            return;
+        }
+
+        let contactoIncompleto = false;
+        nombres.forEach((n, i) => {
+            if (!n.value.trim() || !apellidos[i].value.trim() || !celulares[i].value.trim()) {
+                contactoIncompleto = true;
+            }
+        });
+
+        if (contactoIncompleto) {
+            showToast('Nombres, apellidos y celular son obligatorios para todos los contactos al convertir a cliente.', 'error');
+            return;
+        }
+
+        if (confirm('¿Está seguro de convertir este prospecto en CLIENTE? Esta acción actualizará el estado y guardará el historial.')) {
+            saveProspecto(e, 'cliente');
+        }
+    }
+
+    function saveProspecto(e, forcedStatus = null) {
         e.preventDefault();
 
         // Validaciones manuales para campos críticos
@@ -413,6 +499,11 @@
 
         const form = document.getElementById('form-prospecto');
         const formData = new FormData(form);
+
+        if (forcedStatus) {
+            formData.append('nuevo_estado_cliente', forcedStatus);
+        }
+
         const btn = document.getElementById('btn-save-prospecto');
         const originalText = btn.innerHTML;
 
@@ -474,6 +565,65 @@
         `;
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
+
+    function openModalCarrera() {
+        const uniId = document.getElementById('universidad_id').value;
+        if (!uniId) {
+            showToast('Primero debe seleccionar una universidad', 'error');
+            return;
+        }
+
+        // Obtener texto de TomSelect
+        const uniText = tsUni.options[uniId].text;
+        document.getElementById('carrera-uni-nombre').value = uniText;
+        document.getElementById('modal-carrera').classList.remove('hidden');
+    }
+
+    function closeModalCarrera() {
+        document.getElementById('modal-carrera').classList.add('hidden');
+        document.getElementById('carrera-nombre').value = '';
+    }
+
+    async function saveNewCarrera() {
+        const nombre = document.getElementById('carrera-nombre').value.trim();
+        const uniId = document.getElementById('universidad_id').value;
+
+        if (!nombre) {
+            showToast('Ingrese el nombre de la carrera', 'error');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('nombre', nombre);
+            formData.append('universidad_id', uniId);
+
+            const res = await fetch(`${window.location.origin}/prospectos/save-carrera`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                showToast(data.message, 'success');
+
+                // Añadir al TomSelect
+                tsCarrera.addOption({
+                    value: data.id,
+                    text: data.nombre
+                });
+                tsCarrera.setValue(data.id);
+                tsCarrera.refreshOptions(false);
+
+                closeModalCarrera();
+            } else {
+                showToast(data.message, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error al conectar con el servidor', 'error');
+        }
+    }
 </script>
 
 <style>
@@ -491,6 +641,36 @@
 
     .btn-secondary {
         @apply px-8 py-3.5 bg-slate-100 text-slate-500 rounded-[1.25rem] text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all;
+    }
+
+    .btn-success {
+        background-color: #059669 !important;
+        /* emerald-600 */
+        color: #ffffff !important;
+        padding: 0.875rem 2rem !important;
+        border-radius: 1.25rem !important;
+        font-size: 0.75rem !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        transition: all 0.2s ease-in-out !important;
+        box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3) !important;
+        border: none !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+
+    .btn-success:hover {
+        background-color: #047857 !important;
+        /* emerald-700 */
+        transform: translateY(-1px) !important;
+        box-shadow: 0 20px 25px -5px rgba(5, 150, 105, 0.4) !important;
+    }
+
+    .btn-success:active {
+        transform: scale(0.95) !important;
     }
 
     .animate-fade-in {
