@@ -1,7 +1,7 @@
 <nav class="flex-1 overflow-y-auto pr-1">
     <p class="category-header" style="margin-top: 0;">Principal</p>
 
-    <a href="<?= base_url('dashboard') ?>" class="sidebar-item active">
+    <a href="<?= base_url('dashboard') ?>" class="sidebar-item">
         <div class="flex items-center gap-3">
             <i data-lucide="layout-grid"></i>
             <span class="font-semibold">Dashboard</span>
@@ -12,14 +12,14 @@
         <div class="sidebar-item" onclick="toggleSubmenu(this)">
             <div class="flex items-center gap-3">
                 <i data-lucide="users-2"></i>
-                <span class="font-semibold">Potenciales Clientes</span>
+                <span class="font-semibold">Gestión de Clientes</span>
             </div>
             <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 opacity-40"></i>
         </div>
         <div class="submenu-container">
             <a href="<?= base_url('registrar-potencial-cliente') ?>" class="submenu-item">Registro de Potencial Cliente</a>
             <a href="<?= base_url('lista-potenciales-clientes') ?>" class="submenu-item">Lista de Potenciales Clientes</a>
-            <a href="<?= base_url('documentos-evidencias') ?>" class="submenu-item">Documentos y Evidencias</a>
+            <a href="<?= base_url('lista-clientes') ?>" class="submenu-item">Lista de Clientes</a>
             <a href="<?= base_url('anotaciones') ?>" class="submenu-item">Anotaciones</a>
         </div>
     </div>

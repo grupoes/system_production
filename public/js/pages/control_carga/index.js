@@ -81,8 +81,10 @@ document.addEventListener('DOMContentLoaded', function() {
         calendar.refetchEvents();
     });
 
-    // Modal Functions
+    let currentStartDate = null;
+    
     window.openAsignarModal = function(id, title, start, end, details = {}) {
+        currentStartDate = start; // Store the start date
         document.getElementById('asig-actividad-id').value = id;
         document.getElementById('asig-actividad-nombre').value = title;
         
@@ -166,13 +168,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    formAsignar.addEventListener('submit', function(e) {
+    formAsignar.addEventListener('submit', async function(e) {
         e.preventDefault();
-        // Aquí se enviaría al backend para guardar la asignación
-        alert('Asignación confirmada (Falta implementar el guardado en BD)');
-        closeAsignarModal();
-        // Recargar actividades para quitar la asignada
-        loadPendingActivities();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline-block"></i> Guardando...';
+        submitBtn.disabled = true;
+
+        try {
+            const baseUrl = typeof BASE_URL !== 'undefined' ? BASE_URL : window.location.origin;
+            
+            const formData = new FormData();
+            formData.append('actividad_id', document.getElementById('asig-actividad-id').value);
+            formData.append('usuario_id', document.getElementById('asig-usuario-id').value);
+            
+            if (currentStartDate) {
+                const fecha = currentStartDate.getFullYear() + '-' + 
+                            (currentStartDate.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                            currentStartDate.getDate().toString().padStart(2, '0');
+                formData.append('fecha', fecha);
+            }
+            
+            formData.append('hora', document.getElementById('asig-hora-inicio').value);
+
+            const response = await fetch(`${baseUrl}/control-carga/save`, {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                alert(result.message);
+                closeAsignarModal();
+                loadPendingActivities();
+                calendar.refetchEvents();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('Error al guardar la asignación.');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
     });
 
     // Fetch Pending Activities

@@ -36,19 +36,33 @@ function toggleSubmenu(element) {
 
 // Active state based on URL
 const currentPath = window.location.pathname;
-document.querySelectorAll('.sidebar-item, .submenu-item').forEach(link => {
-    const href = link.getAttribute('href');
-    if (href && (currentPath === href || currentPath.endsWith(href))) {
+
+document.querySelectorAll('.submenu-item').forEach(link => {
+    // Use link.pathname to get just the path from an absolute URL
+    const linkPath = link.pathname;
+    if (!linkPath) return;
+
+    if (currentPath === linkPath || currentPath.startsWith(linkPath + '/')) {
         link.classList.add('active');
 
-        // If it's a submenu item, open the parent and highlight group
+        // Open the parent submenu and mark as expanded
         const parentContainer = link.closest('.submenu-container');
         if (parentContainer) {
             parentContainer.classList.add('open');
             const group = parentContainer.parentElement;
             group.classList.add('has-active');
-            group.querySelector('.sidebar-item').classList.add('expanded');
+            const groupHeader = group.querySelector('.sidebar-item');
+            if (groupHeader) groupHeader.classList.add('expanded');
         }
+    }
+});
+
+// Also handle top-level sidebar-item links (non-submenu)
+document.querySelectorAll('a.sidebar-item').forEach(link => {
+    const linkPath = link.pathname;
+    if (!linkPath) return;
+    if (currentPath === linkPath || currentPath.startsWith(linkPath + '/')) {
+        link.classList.add('active');
     }
 });
 

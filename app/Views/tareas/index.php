@@ -155,7 +155,7 @@
                 const select = document.getElementById('tipo_tarea');
                 let html = '<option value="">Seleccione...</option>';
                 data.data.forEach(item => {
-                    html += `<option value="${item.tipo}">${item.tipo}</option>`;
+                    html += `<option value="${item.id}">${item.tipo}</option>`;
                 });
                 select.innerHTML = html;
             }
@@ -175,7 +175,7 @@
         rolesList.forEach(rol => {
             const selected = selectedRoles.find(sr => sr.rol_id == rol.id);
             const isChecked = selected ? 'checked' : '';
-            const priority = selected ? selected.prioridad : 'PRIMARIA';
+            const priority = selected ? selected.prioridad : '1';
 
             html += `
                 <div class="p-4 bg-slate-50/50 rounded-[1.5rem] border border-slate-100 flex flex-col gap-3 transition-all hover:border-indigo-100 group">
@@ -189,11 +189,11 @@
                     <div id="priority-select-${rol.id}" class="${isChecked ? '' : 'hidden'} animate-fade-in">
                         <div class="flex gap-2">
                             <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="prioridades[${rol.id}]" value="PRIMARIA" class="hidden peer" ${priority === 'PRIMARIA' ? 'checked' : ''}>
+                                <input type="radio" name="prioridades[${rol.id}]" value="1" class="hidden peer" ${priority == '1' ? 'checked' : ''}>
                                 <div class="py-1.5 px-3 rounded-lg bg-white border border-slate-100 text-center text-[9px] font-black text-slate-400 uppercase tracking-widest peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 transition-all">Primaria</div>
                             </label>
                             <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="prioridades[${rol.id}]" value="COMPLEMENTARIA" class="hidden peer" ${priority === 'COMPLEMENTARIA' ? 'checked' : ''}>
+                                <input type="radio" name="prioridades[${rol.id}]" value="0" class="hidden peer" ${priority == '0' ? 'checked' : ''}>
                                 <div class="py-1.5 px-3 rounded-lg bg-white border border-slate-100 text-center text-[9px] font-black text-slate-400 uppercase tracking-widest peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 transition-all">Complementaria</div>
                             </label>
                         </div>
@@ -246,8 +246,9 @@
             }
             
             const rolesHtml = item.roles.map(r => {
-                const color = r.prioridad === 'PRIMARIA' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-500';
-                return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg ${color} text-[9px] font-black uppercase tracking-widest" title="${r.prioridad}">${r.rol_nombre}</span>`;
+                const color = r.prioridad == '1' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-500';
+                const nombrePrio = r.prioridad == '1' ? 'PRIMARIA' : 'COMPLEMENTARIA';
+                return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg ${color} text-[9px] font-black uppercase tracking-widest" title="${nombrePrio}">${r.rol_nombre}</span>`;
             }).join(' ') || '<span class="text-[9px] text-slate-300 italic font-bold">Sin roles asignados</span>';
 
             html += `
@@ -258,7 +259,7 @@
                     <td class="px-6 py-4">
                         <div class="flex flex-col">
                             <span class="text-sm font-black text-slate-800 tracking-tight">${item.nombre}</span>
-                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${item.tipo_tarea}</span>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${item.tipo_tarea_nombre || item.tipo_tarea}</span>
                         </div>
                     </td>
                     <td class="px-6 py-4">

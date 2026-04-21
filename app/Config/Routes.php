@@ -91,11 +91,17 @@ $routes->get('control-carga', 'ControlCarga::index');
 $routes->get('control-carga/pending-activities', 'ControlCarga::getPendingActivities');
 $routes->get('control-carga/users', 'ControlCarga::getUsers');
 $routes->get('control-carga/user-schedule', 'ControlCarga::getUserSchedule');
+$routes->post('control-carga/save', 'ControlCarga::saveAsignacion');
 
 $routes->get('registrar-potencial-cliente', 'Prospectos::registro');
 $routes->get('lista-potenciales-clientes', 'Prospectos::index');
 $routes->get('lista-potenciales-clientes/list', 'Prospectos::getList');
 $routes->get('prospectos/data-form', 'Prospectos::getDataForm');
 $routes->get('prospectos/carreras/(:num)', 'Prospectos::getCarreras/$1');
+$routes->get('prospectos/detalle/(:num)', 'Prospectos::getProspectoDetalle/$1');
 $routes->post('prospectos/save', 'Prospectos::save');
 $routes->post('prospectos/save-carrera', 'Prospectos::saveCarrera');
+$routes->get('lista-clientes', 'Prospectos::clientesIndex');
+$routes->get('lista-clientes/list', 'Prospectos::getClientesList');
+$routes->get('prospectos/schedule-data', 'Prospectos::getScheduleData');
+$routes->post('prospectos/save-schedule', 'Prospectos::saveSchedule');
