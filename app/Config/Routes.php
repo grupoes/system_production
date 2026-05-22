@@ -105,3 +105,8 @@ $routes->get('lista-clientes', 'Prospectos::clientesIndex');
 $routes->get('lista-clientes/list', 'Prospectos::getClientesList');
 $routes->get('prospectos/schedule-data', 'Prospectos::getScheduleData');
 $routes->post('prospectos/save-schedule', 'Prospectos::saveSchedule');
+
+$routes->get('pruebas-sheet', 'GoogleSheetTest::index');
+
+$routes->get('importar-clientes', 'ImportarClientes::index');
+$routes->get('importar-clientes/fetch', 'ImportarClientes::fetchSheetData');
