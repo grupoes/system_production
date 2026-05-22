@@ -30,6 +30,8 @@ async function cargarDatosSheet() {
         currentPage  = 1;
 
         renderStats();
+        renderHojaFilter();
+        renderAuxiliarFilter();
         renderTable();
         showState('table');
 
@@ -54,6 +56,39 @@ function renderStats() {
 
     document.getElementById('stats-bar').classList.remove('hidden');
     lucide.createIcons();
+}
+
+function renderHojaFilter() {
+    const select = document.getElementById('filterHoja');
+    if (!select) return;
+
+    const hojas = [...new Set(allData.map(r => (r[13] ?? '').trim()).filter(Boolean))].sort();
+    const valorActual = select.value;
+    select.innerHTML = '<option value="">Todas las hojas</option>';
+    hojas.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = h;
+        if (h === valorActual) opt.selected = true;
+        select.appendChild(opt);
+    });
+}
+
+function renderAuxiliarFilter() {
+    const select = document.getElementById('filterAuxiliar');
+    if (!select) return;
+
+    // Auxiliar está en columna 10
+    const auxiliares = [...new Set(allData.map(r => (r[10] ?? '').trim()).filter(Boolean))].sort();
+    const valorActual = select.value;
+    select.innerHTML = '<option value="">Todos los auxiliares</option>';
+    auxiliares.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a;
+        opt.textContent = a;
+        if (a === valorActual) opt.selected = true;
+        select.appendChild(opt);
+    });
 }
 
 /* =====================================================
@@ -91,6 +126,7 @@ function renderTable() {
             const auxiliar     = escHtml(row[10] ?? '');
             const fEntrega     = escHtml(row[11] ?? '');
             const horas        = escHtml(row[12] ?? '');
+            const hoja         = escHtml(row[13] ?? '');
 
             const nivelBadge = renderNivelBadge(nivel);
 
@@ -104,7 +140,20 @@ function renderTable() {
             return `
             <tr class="import-tr" data-idx="${startIdx + idx}">
                 <td class="import-td text-center font-black text-slate-400 text-[11px]">${globalIdx}</td>
-                <td class="import-td font-semibold text-slate-700" title="${descripcion}">${descripcion || '<span class="text-slate-300">—</span>'}</td>
+                <td class="import-td">
+                    <div class="flex items-center gap-2">
+                        <span title="${descripcion}" class="truncate block font-semibold text-slate-700 max-w-[120px]">${descripcion || '<span class="text-slate-300">—</span>'}</span>
+                        <select class="select-actividad w-28 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded px-1.5 py-1 text-[9px] font-bold uppercase outline-none cursor-pointer text-slate-600 transition-colors ts-table-actividad" onmousedown="cargarTareas(this)" onclick="event.stopPropagation()">
+                            <option value="">+ Tarea</option>
+                        </select>
+                    </div>
+                </td>
+                <td class="import-td">
+                    <input type="text"
+                        class="input-tiempo w-20 text-center text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded px-1.5 py-1 outline-none focus:ring-2 focus:ring-emerald-400/30 focus:bg-white transition-all placeholder:text-slate-300"
+                        placeholder="—"
+                        title="Editable: ej. 2H 30m">
+                </td>
                 <td class="import-td font-bold text-slate-800" title="${cliente}">${cliente || '<span class="text-slate-300">—</span>'}</td>
                 <td class="import-td text-slate-500 font-mono text-[11px]">${dni || '<span class="text-slate-300">—</span>'}</td>
                 <td class="import-td text-slate-600">${celular || '<span class="text-slate-300">—</span>'}</td>
@@ -117,6 +166,7 @@ function renderTable() {
                 <td class="import-td text-slate-600" title="${auxiliar}">${auxiliar || '<span class="text-slate-300">—</span>'}</td>
                 <td class="import-td text-slate-500 text-[11px]">${fEntrega || '<span class="text-slate-300">—</span>'}</td>
                 <td class="import-td text-center font-bold text-slate-700">${horas || '<span class="text-slate-300">—</span>'}</td>
+                <td class="import-td text-center font-bold text-indigo-600 bg-indigo-50/30 rounded-r-xl border-l border-indigo-100/50">${hoja || '<span class="text-slate-300">—</span>'}</td>
             </tr>`;
         }).join('');
     }
@@ -202,14 +252,18 @@ function goToPage(page) {
    BÚSQUEDA Y FILTRO
    ===================================================== */
 function applyFilters() {
-    const search = (document.getElementById('searchInput').value ?? '').trim().toLowerCase();
-    const nivel  = (document.getElementById('filterNivel').value ?? '').trim().toUpperCase();
+    const search    = (document.getElementById('searchInput').value ?? '').trim().toLowerCase();
+    const nivel     = (document.getElementById('filterNivel').value ?? '').trim().toUpperCase();
+    const hoja      = (document.getElementById('filterHoja').value ?? '').trim();
+    const auxiliar  = (document.getElementById('filterAuxiliar').value ?? '').trim();
 
     filteredData = allData.filter(row => {
-        const rowStr = row.join(' ').toLowerCase();
-        const matchSearch = !search || rowStr.includes(search);
-        const matchNivel  = !nivel || (row[4] ?? '').toUpperCase().includes(nivel);
-        return matchSearch && matchNivel;
+        const rowStr      = row.join(' ').toLowerCase();
+        const matchSearch   = !search   || rowStr.includes(search);
+        const matchNivel    = !nivel    || (row[4]  ?? '').toUpperCase().includes(nivel);
+        const matchHoja     = !hoja     || (row[13] ?? '') === hoja;
+        const matchAuxiliar = !auxiliar || (row[10] ?? '').trim() === auxiliar;
+        return matchSearch && matchNivel && matchHoja && matchAuxiliar;
     });
 
     currentPage = 1;
@@ -253,6 +307,97 @@ function escHtml(str) {
 }
 
 /* =====================================================
+   TAREAS (SELECT)
+   ===================================================== */
+let cacheTareasOptions = null;
+let isFetchingTareas = false;
+
+async function cargarTareas(selectElement) {
+    if (selectElement.tomselect) return; // Ya es TomSelect
+
+    if (cacheTareasOptions === null && !isFetchingTareas) {
+        isFetchingTareas = true;
+        const originalText = selectElement.options[0].text;
+        selectElement.options[0].text = 'Cargando...';
+        
+        try {
+            const res = await fetch(window.location.origin + '/lista-tareas/list?limit=1000');
+            const json = await res.json();
+            if (json.status === 'success') {
+                cacheTareasOptions = [{ value: '', text: '+ Tarea', minutos: null }];
+                json.data.forEach(t => {
+                    cacheTareasOptions.push({
+                        value: t.id,
+                        text: escHtml(t.nombre),
+                        minutos: t.horas_estimadas ? parseInt(t.horas_estimadas) : null
+                    });
+                });
+            } else {
+                selectElement.options[0].text = 'Error';
+            }
+        } catch (e) {
+            console.error('Error cargando tareas:', e);
+            selectElement.options[0].text = 'Error';
+        } finally {
+            isFetchingTareas = false;
+        }
+    } else if (isFetchingTareas) {
+        return; // Esperando que la primera petición termine
+    }
+
+    if (cacheTareasOptions) {
+        // Inicializar Tom Select dinámicamente con los datos
+        const ts = new TomSelect(selectElement, {
+            create: false,
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            options: cacheTareasOptions,
+            placeholder: '+ TAREA',
+            maxOptions: 50,
+            dropdownParent: 'body',
+            dropdownClass: 'ts-dropdown ts-table-actividad-dropdown',
+            onChange: function(value) {
+                this.blur();
+                // Buscar la fila padre y actualizar el input de tiempo
+                const row = selectElement.closest('tr');
+                if (!row) return;
+                const tiempoInput = row.querySelector('.input-tiempo');
+                if (!tiempoInput) return;
+
+                if (!value) {
+                    tiempoInput.value = '';
+                    return;
+                }
+                const tarea = cacheTareasOptions.find(o => String(o.value) === String(value));
+                if (tarea && tarea.minutos) {
+                    tiempoInput.value = minutosAHoras(tarea.minutos);
+                } else {
+                    tiempoInput.value = '';
+                }
+            },
+            render: {
+                no_results: function(data, escape) {
+                    return '<div class="no-results px-2 py-1 text-slate-400 text-[10px]">No se encontraron resultados</div>';
+                }
+            }
+        });
+        
+        // Abrir inmediatamente ya que el usuario hizo click
+        setTimeout(() => ts.open(), 50);
+    }
+}
+
+function minutosAHoras(minutos) {
+    if (!minutos || minutos <= 0) return '';
+    const h = Math.floor(minutos / 60);
+    const m = minutos % 60;
+    if (h > 0 && m > 0) return `${h}H ${m}m`;
+    if (h > 0) return `${h}H`;
+    return `${m}m`;
+}
+
+/* =====================================================
    INIT
    ===================================================== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -260,4 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('searchInput')?.addEventListener('input', applyFilters);
     document.getElementById('filterNivel')?.addEventListener('change', applyFilters);
+    document.getElementById('filterHoja')?.addEventListener('change', applyFilters);
+    document.getElementById('filterAuxiliar')?.addEventListener('change', applyFilters);
 });

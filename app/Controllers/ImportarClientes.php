@@ -17,8 +17,8 @@ class ImportarClientes extends BaseController
     {
         try {
             $googleSheetsService = new GoogleSheetsService();
-            // Leemos la 'Hoja 1'
-            $datos = $googleSheetsService->leerHoja('Hoja 1');
+            // Leemos todas las hojas del documento y las agrupamos
+            $datos = $googleSheetsService->leerTodasLasHojas();
             
             if (isset($datos['error'])) {
                 return $this->response->setJSON([

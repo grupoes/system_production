@@ -1,6 +1,9 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
+<!-- Tom Select Styles -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+
 <div class="flex flex-col gap-6">
 
     <!-- Header Page -->
@@ -106,6 +109,18 @@
                     <option value="PREGRADO">Pregrado</option>
                 </select>
             </div>
+            <div class="flex items-center gap-2 text-xs text-slate-500 font-bold">
+                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                <select id="filterHoja" class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 text-xs font-bold outline-none cursor-pointer">
+                    <option value="">Todas las hojas</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-500 font-bold">
+                <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                <select id="filterAuxiliar" class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 text-xs font-bold outline-none cursor-pointer">
+                    <option value="">Todos los auxiliares</option>
+                </select>
+            </div>
             <p class="text-xs text-slate-400 font-bold ml-auto">
                 Mostrando <span id="filas-count" class="text-slate-700">0</span> registros
             </p>
@@ -117,7 +132,8 @@
                 <thead>
                     <tr id="table-head-row">
                         <th class="import-th w-10 text-center">#</th>
-                        <th class="import-th">Descripción</th>
+                        <th class="import-th">Actividades</th>
+                        <th class="import-th">Tiempo</th>
                         <th class="import-th">Cliente</th>
                         <th class="import-th">DNI</th>
                         <th class="import-th">Celular</th>
@@ -130,6 +146,7 @@
                         <th class="import-th">Auxiliar</th>
                         <th class="import-th">F. Entrega</th>
                         <th class="import-th">Horas</th>
+                        <th class="import-th">Hoja</th>
                     </tr>
                 </thead>
                 <tbody id="sheet-tbody"></tbody>
@@ -254,7 +271,63 @@
         opacity: 0.4;
         pointer-events: none;
     }
+
+    /* Tom Select Small for Table */
+    .ts-wrapper.ts-table-actividad {
+        width: 140px !important;
+        min-width: 140px !important;
+    }
+    .ts-wrapper.ts-table-actividad .ts-control {
+        border: 1px solid #e2e8f0 !important;
+        background-color: #f8fafc !important;
+        border-radius: 0.5rem !important;
+        padding: 0.25rem 0.5rem !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        min-height: 28px !important;
+        box-shadow: none !important;
+        color: #475569 !important;
+        text-transform: uppercase !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .ts-wrapper.ts-table-actividad .ts-control > .item {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 100% !important;
+    }
+    .ts-wrapper.ts-table-actividad .ts-control > input {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+    }
+    .ts-wrapper.ts-table-actividad.focus .ts-control {
+        border-color: #10b981 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;
+    }
+    
+    /* Tom Select Dropdown in Body */
+    .ts-table-actividad-dropdown {
+        border-radius: 0.5rem !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+        z-index: 9999 !important;
+        background: white !important;
+    }
+    .ts-table-actividad-dropdown .option {
+        padding: 0.35rem 0.5rem !important;
+        cursor: pointer !important;
+    }
+    .ts-table-actividad-dropdown .active {
+        background-color: #f1f5f9 !important;
+        color: #10b981 !important;
+    }
 </style>
 
+<!-- Tom Select Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script src="<?= base_url('js/pages/importar_clientes/importar.js') ?>"></script>
 <?= $this->endSection() ?>
