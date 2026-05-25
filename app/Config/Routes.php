@@ -110,3 +110,5 @@ $routes->get('pruebas-sheet', 'GoogleSheetTest::index');
 
 $routes->get('importar-clientes', 'ImportarClientes::index');
 $routes->get('importar-clientes/fetch', 'ImportarClientes::fetchSheetData');
+$routes->get('importar-clientes/get-auxiliar-schedule', 'ImportarClientes::getAuxiliarSchedule');
+$routes->post('importar-clientes/save-schedule', 'ImportarClientes::saveSchedule');

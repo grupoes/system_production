@@ -6,9 +6,23 @@
 
 const LIMIT_PER_PAGE = 25;
 
+const getBaseUrl = () => {
+    return (typeof BASE_URL !== 'undefined') ? BASE_URL : window.location.origin;
+};
+
+function normalizarTexto(texto) {
+    return (texto || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // remover acentos
+        .replace(/\s+/g, " ")            // colapsar espacios múltiples
+        .trim();
+}
+
 let allData    = [];  // todos los registros traídos del sheet
 let filteredData = []; // después de aplicar búsqueda / filtro
 let currentPage = 1;
+let listAuxiliares = []; // lista de auxiliares activos
 
 /* =====================================================
    FETCH DE DATOS DESDE EL BACKEND
@@ -17,12 +31,25 @@ async function cargarDatosSheet() {
     showState('loading');
 
     try {
-        const res  = await fetch(window.location.origin + '/importar-clientes/fetch');
+        const res  = await fetch(getBaseUrl() + '/importar-clientes/fetch');
         const json = await res.json();
 
         if (json.status !== 'success') {
             showError(json.message ?? 'Error desconocido al leer la hoja.');
             return;
+        }
+
+        // Cargar auxiliares si no se han cargado aún
+        if (listAuxiliares.length === 0) {
+            try {
+                const resData = await fetch(getBaseUrl() + '/prospectos/schedule-data');
+                const jsonData = await resData.json();
+                if (jsonData.status === 'success') {
+                    listAuxiliares = jsonData.auxiliares || [];
+                }
+            } catch (errAux) {
+                console.error("No se pudo cargar la lista de auxiliares:", errAux);
+            }
         }
 
         allData      = json.data;   // arreglo de filas (sin header)
@@ -105,7 +132,7 @@ function renderTable() {
     if (pageData.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="14" class="p-12 text-center text-slate-400 text-sm font-bold">
+                <td colspan="18" class="p-12 text-center text-slate-400 text-sm font-bold">
                     No se encontraron registros con ese filtro.
                 </td>
             </tr>`;
@@ -164,6 +191,7 @@ function renderTable() {
                 <td class="import-td text-slate-500 text-[11px]">${fIngreso || '<span class="text-slate-300">—</span>'}</td>
                 <td class="import-td text-slate-600" title="${jefe}">${jefe || '<span class="text-slate-300">—</span>'}</td>
                 <td class="import-td text-slate-600" title="${auxiliar}">${auxiliar || '<span class="text-slate-300">—</span>'}</td>
+                <td class="import-td text-center btn-fila-status text-slate-300 text-[10px]">—</td>
                 <td class="import-td text-slate-500 text-[11px]">${fEntrega || '<span class="text-slate-300">—</span>'}</td>
                 <td class="import-td text-center font-bold text-slate-700">${horas || '<span class="text-slate-300">—</span>'}</td>
                 <td class="import-td text-center font-bold text-indigo-600 bg-indigo-50/30 rounded-r-xl border-l border-indigo-100/50">${hoja || '<span class="text-slate-300">—</span>'}</td>
@@ -248,6 +276,47 @@ function goToPage(page) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function findBestAuxiliarMatch(selectedAuxName) {
+    if (!selectedAuxName || listAuxiliares.length === 0) return null;
+
+    const sheetName = normalizarTexto(selectedAuxName);
+    
+    // 1. Intentar coincidencia exacta o por subcadena completa primero
+    let match = listAuxiliares.find(u => {
+        const dbName = normalizarTexto(u.nombre);
+        return dbName.includes(sheetName) || sheetName.includes(dbName);
+    });
+    if (match) return match;
+
+    // 2. Intentar coincidencia inteligente por palabras (para nombres abreviados o invertidos)
+    const sheetWords = sheetName.split(' ').filter(w => w.length > 2);
+    if (sheetWords.length === 0) return null;
+
+    let bestMatch = null;
+    let maxOverlaps = 0;
+
+    listAuxiliares.forEach(u => {
+        const dbName = normalizarTexto(u.nombre);
+        const dbWords = dbName.split(' ').filter(w => w.length > 2);
+        
+        const overlaps = dbWords.filter(dw => 
+            sheetWords.some(sw => dw.includes(sw) || sw.includes(dw))
+        ).length;
+
+        if (overlaps > maxOverlaps) {
+            maxOverlaps = overlaps;
+            bestMatch = u;
+        }
+    });
+
+    const requiredOverlaps = sheetWords.length === 1 ? 1 : 2;
+    if (maxOverlaps >= requiredOverlaps) {
+        return bestMatch;
+    }
+
+    return null;
+}
+
 /* =====================================================
    BÚSQUEDA Y FILTRO
    ===================================================== */
@@ -268,13 +337,257 @@ function applyFilters() {
 
     currentPage = 1;
     renderTable();
+
+    // Si hay un auxiliar seleccionado en el filtro, mostrar los controles globales de programación
+    const selectedAuxName = auxiliar;
+    if (selectedAuxName) {
+        const controls = document.getElementById('global-schedule-controls');
+        const nameSpan = document.getElementById('global-auxiliar-name');
+        if (controls) controls.classList.remove('hidden');
+        if (nameSpan) nameSpan.textContent = selectedAuxName;
+
+        const match = findBestAuxiliarMatch(selectedAuxName);
+        const selectContainer = document.getElementById('global-auxiliar-select-container');
+        const fallbackSelect = document.getElementById('global-auxiliar-select');
+
+        if (match) {
+            if (selectContainer) selectContainer.classList.add('hidden');
+            cargarHorarioGlobal(match.id);
+        } else {
+            // No se pudo encontrar un usuario vinculado automáticamente
+            if (selectContainer && fallbackSelect) {
+                // Rellenar select de fallback si no tiene opciones aún
+                if (fallbackSelect.options.length <= 1) {
+                    fallbackSelect.innerHTML = '<option value="">Selecciona el usuario del sistema...</option>';
+                    listAuxiliares.forEach(u => {
+                        const opt = document.createElement('option');
+                        opt.value = u.id;
+                        opt.textContent = u.nombre;
+                        fallbackSelect.appendChild(opt);
+                    });
+                }
+                fallbackSelect.value = '';
+                selectContainer.classList.remove('hidden');
+            }
+            
+            // Limpiar inputs y deshabilitar botón de programar hasta que vinculen un usuario manualmente
+            const fechaInput = document.getElementById('global-fecha-inicio');
+            const horaInput  = document.getElementById('global-hora-inicio');
+            const btn        = document.getElementById('btn-global-programar');
+            if (fechaInput) fechaInput.value = '';
+            if (horaInput) horaInput.value = '';
+            if (btn) {
+                btn.dataset.auxiliarId = '';
+                btn.disabled = true;
+            }
+        }
+    } else {
+        ocultarControlesGlobales();
+    }
 }
 
 /* =====================================================
-   ESTADOS DE UI
+   CONTROLES GLOBALES DE PROGRAMACIÓN (FILTRO AUXILIAR)
    ===================================================== */
+async function cargarHorarioGlobal(usuarioId) {
+    const controls = document.getElementById('global-schedule-controls');
+    const fechaInput = document.getElementById('global-fecha-inicio');
+    const horaInput  = document.getElementById('global-hora-inicio');
+    const btn        = document.getElementById('btn-global-programar');
+
+    if (!controls || !fechaInput || !horaInput) return;
+
+    // Mostrar con estado de carga
+    controls.classList.remove('hidden');
+    if (lucide) lucide.createIcons();
+    fechaInput.value = '';
+    horaInput.value  = '';
+    if (btn) btn.disabled = true;
+
+    try {
+        const res  = await fetch(`${getBaseUrl()}/importar-clientes/get-auxiliar-schedule?usuario_id=${usuarioId}`);
+        const json = await res.json();
+        if (json.status === 'success') {
+            fechaInput.value = json.fecha;
+            horaInput.value  = json.hora;
+            // Guardar el id del auxiliar en el botón para usarlo al programar
+            if (btn) {
+                btn.dataset.auxiliarId = usuarioId;
+                btn.disabled = false;
+            }
+        } else {
+            console.error('Error horario:', json.message);
+        }
+    } catch (e) {
+        console.error('Error al obtener horario global:', e);
+    }
+}
+
+function ocultarControlesGlobales() {
+    const controls = document.getElementById('global-schedule-controls');
+    if (controls) controls.classList.add('hidden');
+}
+
+/* =====================================================
+   PROGRAMAR TODAS LAS FILAS FILTRADAS (BOTÓN GLOBAL)
+   ===================================================== */
+async function programarFiltrados() {
+    const fechaInicioVal = document.getElementById('global-fecha-inicio')?.value;
+    const horaInicioVal  = document.getElementById('global-hora-inicio')?.value;
+    const btn            = document.getElementById('btn-global-programar');
+    const auxiliarId     = btn?.dataset.auxiliarId;
+
+    if (!auxiliarId) {
+        if (typeof showToast !== 'undefined') showToast('Seleccione un auxiliar en el filtro.', 'error');
+        return;
+    }
+    if (!fechaInicioVal || !horaInicioVal) {
+        if (typeof showToast !== 'undefined') showToast('Complete el día y hora de empiezo.', 'error');
+        return;
+    }
+
+    // Recopilar todas las filas visibles en el tbody
+    const rows = document.querySelectorAll('#sheet-tbody .import-tr');
+    if (rows.length === 0) {
+        if (typeof showToast !== 'undefined') showToast('No hay filas visibles para programar.', 'error');
+        return;
+    }
+
+    // Filtrar solo las que no han sido programadas aún
+    const pendientes = Array.from(rows).filter(row => {
+        const statusCell = row.querySelector('.btn-fila-status');
+        return statusCell && !statusCell.dataset.programado;
+    });
+
+    if (pendientes.length === 0) {
+        if (typeof showToast !== 'undefined') showToast('Todos los clientes ya fueron programados.', 'error');
+        return;
+    }
+
+    // Deshabilitar botón global mientras se procesa
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<div class="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin"></div> Programando...`;
+    }
+
+    let ok = 0, fail = 0;
+
+    for (const row of pendientes) {
+        const idx = parseInt(row.getAttribute('data-idx'));
+        const originalRow = filteredData[idx];
+        if (!originalRow) { fail++; continue; }
+
+        const selectAct   = row.querySelector('.select-actividad');
+        const tiempoInput = row.querySelector('.input-tiempo');
+        const tareaId     = selectAct ? (selectAct.tomselect ? selectAct.tomselect.getValue() : selectAct.value) : '';
+        const tiempoVal   = tiempoInput ? tiempoInput.value : '';
+
+        if (!tareaId || !tiempoVal) { fail++; continue; }
+
+        const statusCell = row.querySelector('.btn-fila-status');
+
+        // Marcar como en progreso
+        if (statusCell) {
+            statusCell.innerHTML = `<div class="w-3 h-3 rounded-full border-2 border-emerald-300 border-t-emerald-600 animate-spin inline-block"></div>`;
+        }
+
+        const formData = new FormData();
+        formData.append('cliente',       originalRow[1]  ?? '');
+        formData.append('dni',           originalRow[2]  ?? '');
+        formData.append('celular',       originalRow[3]  ?? '');
+        formData.append('nivel',         originalRow[4]  ?? '');
+        formData.append('carrera',       originalRow[5]  ?? '');
+        formData.append('universidad',   originalRow[6]  ?? '');
+        formData.append('link_drive',    originalRow[7]  ?? '');
+        formData.append('fecha_entrega', originalRow[11] ?? '');
+        formData.append('jefe',          originalRow[9]  ?? '');
+        formData.append('descripcion',   originalRow[0]  ?? '');
+        formData.append('tarea_id',      tareaId);
+        formData.append('tiempo',        tiempoVal);
+        formData.append('auxiliar_id',   auxiliarId);
+        formData.append('fecha_inicio',  fechaInicioVal);
+        formData.append('hora_inicio',   horaInicioVal);
+
+        try {
+            const res  = await fetch(`${getBaseUrl()}/importar-clientes/save-schedule`, { method: 'POST', body: formData });
+            const json = await res.json();
+
+            if (json.status === 'success') {
+                ok++;
+                if (statusCell) {
+                    statusCell.dataset.programado = '1';
+                    statusCell.innerHTML = `<span class="inline-flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">
+                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        OK
+                    </span>`;
+                }
+                // Deshabilitar controles de la fila
+                row.querySelectorAll('input, select').forEach(el => {
+                    el.disabled = true;
+                    if (el.tomselect) el.tomselect.disable();
+                });
+            } else {
+                fail++;
+                if (statusCell) {
+                    statusCell.innerHTML = `<span class="inline-flex items-center gap-1 text-[9px] font-black text-red-500 bg-red-50 border border-red-100 rounded-full px-2 py-0.5" title="${escHtml(json.message)}">
+                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Error
+                    </span>`;
+                }
+            }
+        } catch (e) {
+            fail++;
+            if (statusCell) {
+                statusCell.innerHTML = `<span class="text-[9px] font-black text-red-400">Error red</span>`;
+            }
+        }
+    }
+
+    // Restaurar botón
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="calendar" class="w-3.5 h-3.5"></i> Programar Clientes`;
+        if (lucide) lucide.createIcons();
+    }
+
+    if (typeof showToast !== 'undefined') {
+        if (ok > 0 && fail === 0)  showToast(`${ok} cliente(s) programados con éxito.`, 'success');
+        if (ok > 0 && fail > 0)    showToast(`${ok} programados, ${fail} con error (tarea/tiempo faltante).`, 'error');
+        if (ok === 0)               showToast(`No se pudo programar ningún cliente. Verifique tarea y tiempo.`, 'error');
+    }
+}
+
+/* =====================================================
+   INIT
+   ===================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+
+    document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+    document.getElementById('filterNivel')?.addEventListener('change', applyFilters);
+    document.getElementById('filterHoja')?.addEventListener('change', applyFilters);
+    document.getElementById('filterAuxiliar')?.addEventListener('change', applyFilters);
+
+    document.getElementById('global-auxiliar-select')?.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val) {
+            cargarHorarioGlobal(val);
+        } else {
+            const btn = document.getElementById('btn-global-programar');
+            const fechaInput = document.getElementById('global-fecha-inicio');
+            const horaInput  = document.getElementById('global-hora-inicio');
+            if (fechaInput) fechaInput.value = '';
+            if (horaInput) horaInput.value = '';
+            if (btn) {
+                btn.dataset.auxiliarId = '';
+                btn.disabled = true;
+            }
+        }
+    });
+});
+
 function showState(state) {
-    const ids = ['placeholder-inicial', 'loading-state', 'error-state', 'table-toolbar', 'table-wrapper', 'table-pagination'];
+    const ids = ['placeholder-inicial', 'loading-state', 'error-state', 'table-toolbar', 'table-wrapper', 'table-pagination', 'global-schedule-controls'];
     ids.forEach(id => document.getElementById(id)?.classList.add('hidden'));
 
     if (state === 'loading') {
@@ -321,7 +634,7 @@ async function cargarTareas(selectElement) {
         selectElement.options[0].text = 'Cargando...';
         
         try {
-            const res = await fetch(window.location.origin + '/lista-tareas/list?limit=1000');
+            const res = await fetch(getBaseUrl() + '/lista-tareas/list?limit=1000');
             const json = await res.json();
             if (json.status === 'success') {
                 cacheTareasOptions = [{ value: '', text: '+ Tarea', minutos: null }];
@@ -397,14 +710,3 @@ function minutosAHoras(minutos) {
     return `${m}m`;
 }
 
-/* =====================================================
-   INIT
-   ===================================================== */
-document.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
-
-    document.getElementById('searchInput')?.addEventListener('input', applyFilters);
-    document.getElementById('filterNivel')?.addEventListener('change', applyFilters);
-    document.getElementById('filterHoja')?.addEventListener('change', applyFilters);
-    document.getElementById('filterAuxiliar')?.addEventListener('change', applyFilters);
-});

@@ -126,6 +126,46 @@
             </p>
         </div>
 
+        <!-- Global Schedule Controls (se muestra abajo del filtro cuando se selecciona un auxiliar) -->
+        <div id="global-schedule-controls" class="hidden border-b border-emerald-100 bg-emerald-50/50 px-6 py-4 animate-fade-in flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 shrink-0">
+                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-black text-emerald-800 uppercase tracking-wider">
+                        Programación por Lotes: <span id="global-auxiliar-name" class="text-emerald-600 font-bold"></span>
+                    </h4>
+                    <p class="text-[11px] text-emerald-600/80 font-medium">Se programarán todos los clientes filtrados con el auxiliar seleccionado.</p>
+                    
+                    <!-- Fallback selector if matching fails -->
+                    <div id="global-auxiliar-select-container" class="hidden mt-2 flex items-center gap-2 flex-wrap">
+                        <span class="text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200/50 rounded-lg px-2 py-0.5 uppercase tracking-wider shrink-0 flex items-center gap-1">
+                            <i data-lucide="alert-circle" class="w-3 h-3"></i>
+                            No Vinculado
+                        </span>
+                        <select id="global-auxiliar-select" class="bg-white border border-amber-200 text-[10px] font-bold text-amber-800 rounded-lg px-2.5 py-1 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer shadow-sm">
+                            <option value="">Selecciona el usuario del sistema...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <div class="flex items-center gap-2 bg-white border border-emerald-100 rounded-xl px-3 py-2 shadow-sm">
+                    <span class="text-[9px] font-black text-emerald-800/60 uppercase tracking-widest">Fecha Inicio:</span>
+                    <input type="date" id="global-fecha-inicio" class="text-xs font-bold text-emerald-800 bg-transparent outline-none cursor-pointer border-none p-0 focus:ring-0 focus:outline-none" />
+                </div>
+                <div class="flex items-center gap-2 bg-white border border-emerald-100 rounded-xl px-3 py-2 shadow-sm">
+                    <span class="text-[9px] font-black text-emerald-800/60 uppercase tracking-widest">Hora Inicio:</span>
+                    <input type="time" id="global-hora-inicio" class="text-xs font-bold text-emerald-800 bg-transparent outline-none cursor-pointer border-none p-0 focus:ring-0 focus:outline-none" />
+                </div>
+                <button id="btn-global-programar" onclick="programarFiltrados()" class="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md transition-all active:scale-95 text-xs font-bold whitespace-nowrap w-full sm:w-auto">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    Programar Clientes
+                </button>
+            </div>
+        </div>
+
         <!-- Data Table -->
         <div id="table-wrapper" class="hidden overflow-x-auto">
             <table class="import-table w-full border-collapse">
@@ -144,6 +184,7 @@
                         <th class="import-th">F. Ingreso</th>
                         <th class="import-th">Jefe</th>
                         <th class="import-th">Auxiliar</th>
+                        <th class="import-th text-center">Prog.</th>
                         <th class="import-th">F. Entrega</th>
                         <th class="import-th">Horas</th>
                         <th class="import-th">Hoja</th>
@@ -329,5 +370,8 @@
 
 <!-- Tom Select Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    const BASE_URL = '<?= base_url() ?>'.replace(/\/$/, '');
+</script>
 <script src="<?= base_url('js/pages/importar_clientes/importar.js') ?>"></script>
 <?= $this->endSection() ?>
